@@ -1,26 +1,30 @@
-use std::collections::HashMap;
-
 mod story;
 mod display;
 
 
 fn main() {
     let mut story = story::Story::new();
-    let mut events: HashMap<story::StoryEvent, bool> = HashMap::new();
     display::startup();
 
     loop{
-        let choice = display::get_selection_from_node(story.get_current_node());
+        let current_node = story.get_current_node();
+        let choice = display::present_node(current_node); // Display node & have user pick
 
-        if display::evaluate_choice(&story, &mut events, choice){
-            story.current_node = choice.destination_node;
-            if story.get_node(choice.destination_node).prev_node.is_some(){
-
-            }
-        }
-        else{
-            display::choice_failed();
+        if !story::is_choice_unlocked(&story, choice) {
+            display::show_choice_locked(choice);
             continue;
         }
+
+        display::pick_choice(choice);
+
+        story::pick_choice(&mut story, choice);
+        for skipped in &current_node.options{
+            if std::ptr::eq(skipped, choice){
+                continue;
+            }
+            story::skip_choice(&mut story, skipped);
+        }
+
+        story.current_node = choice.destination_node;
     }
 }

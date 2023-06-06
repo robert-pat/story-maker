@@ -11,20 +11,21 @@ pub enum StoryEvent { //TODO: better name for these, eg: pickup an item, press a
 
 }
 
+#[derive(PartialEq)] // IDK if this works, checking for e
 pub struct StoryChoice{
-    unlocked_description: String,
-    locked_description: Option<String>,
+    pub(crate) description: String,
+    pub(crate) destination_node: NodeID,
+    pub(crate) message_on_chose: Option<String>, // Display when this option is chosen
+    pub(crate) message_on_lock: Option<String>,  // Display when trying this option & this is locked
     requirements: Vec<StoryEvent>,
-    pub destination_node: NodeID,
-    message_when_chosen: Option<String>,
-    when_chosen: Vec<(StoryEvent, bool)>,
-    when_skipped: Vec<(StoryEvent, bool)>,
+    when_chosen: Vec<(StoryEvent, bool)>, // events to update when this option is chosen
+    when_skipped: Vec<(StoryEvent, bool)>, // events to update when this option is skipped
 }
 
 pub struct StoryNode{
-    id: NodeID,
-    description: String,
-    options: Vec<StoryChoice>,
+    pub(crate) id: NodeID,
+    pub(crate) description: String,
+    pub(crate) options: Vec<StoryChoice>,
     pub(crate) prev_node: Option<NodeID>
 }
 
@@ -32,7 +33,7 @@ pub struct Story {
     pub current_node: NodeID,
     pub prev_node: Option<NodeID>,
     nodes: HashMap<NodeID, StoryNode>,
-    //events: HashMap<StoryEvent, bool> //TODO: rename here too (if changing StoryEvent)
+    events: HashMap<StoryEvent, bool> //TODO: rename here too (if changing StoryEvent)
 }
 
 impl Story{
@@ -49,6 +50,7 @@ impl Story{
             current_node: RootNode,
             prev_node: None,
             nodes: n,
+            events: HashMap::new()
         }
     }
 
@@ -69,13 +71,26 @@ impl Story{
             None => panic!("Could not retrieve current node: {:?}", self.current_node)
         }
     }
+}
 
-    pub fn is_choice_locked(events_record: &HashMap<StoryEvent, bool>, choice: &StoryChoice) -> bool{
-        for r in &choice.requirements{
-            if !*events_record.get(r).unwrap_or(&false){
-                return false;
-            }
+pub fn is_choice_unlocked(story: &Story, choice: &StoryChoice) -> bool{
+    for r in &choice.requirements{
+        if !*story.events.get(r).unwrap_or(&false){
+            return false;
         }
-        true
+    }
+    true
+}
+
+pub fn pick_choice(story: &mut Story, choice: &StoryChoice){
+    story.current_node = choice.destination_node;
+    for change in &choice.when_chosen{
+        *story.events.get_mut(&change.0).unwrap() = change.1;
+    }
+}
+pub fn skip_choice(story: &mut Story, choice: &StoryChoice){
+    story.current_node = choice.destination_node;
+    for change in &choice.when_skipped{
+        *story.events.get_mut(&change.0).unwrap() = change.1;
     }
 }
