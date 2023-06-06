@@ -1,3 +1,5 @@
+use crate::story::NodeID;
+
 mod story;
 mod display;
 

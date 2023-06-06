@@ -30,10 +30,10 @@ pub struct StoryNode{
 }
 
 pub struct Story {
-    pub current_node: NodeID,
-    pub prev_node: Option<NodeID>,
-    nodes: HashMap<NodeID, StoryNode>,
-    events: HashMap<StoryEvent, bool> //TODO: rename here too (if changing StoryEvent)
+    pub(crate) current_node: NodeID,
+    pub(crate) prev_node: Option<NodeID>,
+    pub(crate) nodes: HashMap<NodeID, StoryNode>,
+    pub(crate) events: HashMap<StoryEvent, bool> //TODO: rename here too (if changing StoryEvent)
 }
 
 impl Story{
@@ -55,8 +55,7 @@ impl Story{
     }
 
     pub fn from_file() -> Self{
-        // Should just be JSON
-        todo!()
+        todo!() // read the story from JSON
     }
 
     pub fn get_node(&self, node: NodeID) -> &StoryNode{
