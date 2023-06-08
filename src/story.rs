@@ -22,7 +22,7 @@ impl Default for NodeID{
     }
 }
 
-#[derive(Hash, PartialEq, Eq)]
+#[derive(Hash, PartialEq, Eq, Default)]
 pub struct StoryEvent { //TODO: better name for these, eg: pickup an item, press a button, etc.
     id: u64,
 }
@@ -36,17 +36,13 @@ impl StoryEvent{
         }
     }
 }
-impl Default for StoryEvent{
-    fn default() -> Self {
-        Self{ id: 0}
-    }
-}
 
 pub struct StoryChoice{
     pub(crate) description: String,
     pub(crate) destination_node: NodeID,
     pub(crate) message_on_chose: Option<String>, // Display when this option is chosen
     pub(crate) message_on_lock: Option<String>,  // Display when trying this option & this is locked
+    pub(crate) message_on_skip: Option<String>, // Display when skipping this choice
     requirements: Vec<StoryEvent>,
     when_chosen: Vec<(StoryEvent, bool)>, // events to update when this option is chosen
     when_skipped: Vec<(StoryEvent, bool)>, // events to update when this option is skipped
@@ -58,6 +54,7 @@ impl StoryChoice{
             destination_node: NodeID::default(),
             message_on_chose: None,
             message_on_lock: None,
+            message_on_skip: None,
             requirements: vec![],
             when_chosen: vec![],
             when_skipped: vec![],
@@ -69,6 +66,7 @@ impl StoryChoice{
             destination_node: id,
             message_on_chose: None,
             message_on_lock: None,
+            message_on_skip: None,
             requirements: vec![],
             when_chosen: vec![],
             when_skipped: vec![],
@@ -80,7 +78,7 @@ pub struct StoryNode{
     pub(crate) id: NodeID,
     pub(crate) description: String,
     pub(crate) options: Vec<StoryChoice>,
-    pub(crate) prev_node: Option<NodeID>
+    pub(crate) prev_node: Option<StoryChoice>
 }
 impl StoryNode{
     pub fn new() -> Self{

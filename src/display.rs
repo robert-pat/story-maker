@@ -1,5 +1,4 @@
 use crate::story;
-use crate::story::StoryChoice;
 
 pub fn startup(){
     // boot message
@@ -12,7 +11,7 @@ fn display_node(node: &story::StoryNode){
     println!("Please Chose An Option:");
 
     if node.prev_node.is_some(){
-        println!("0) Go Back");
+        println!("0) {}", node.prev_node.as_ref().unwrap().description);
     }
     let mut n = 1;
     for option in &node.options{
@@ -30,6 +29,9 @@ fn read_selected_choice(node: &story::StoryNode) -> Result<&story::StoryChoice, 
         Ok(n) => n,
         Err(_) => return Err(())
     };
+    if chosen_option == 0 && node.prev_node.is_some(){
+        return Ok(node.prev_node.as_ref().unwrap());
+    }
     match node.options.get(chosen_option - 1){
         Some(c) => Ok(c),
         None => Err(()),
@@ -50,6 +52,12 @@ pub fn present_node(node: &story::StoryNode)-> &story::StoryChoice{
 pub fn pick_choice(choice: &story::StoryChoice){
     if choice.message_on_chose.is_some(){
         println!("{}", choice.message_on_chose.as_ref().unwrap());
+    }
+}
+
+pub fn skip_choice(choice: &story::StoryChoice){
+    if choice.message_on_skip.is_some(){
+        println!("{}", choice.message_on_skip.as_ref().unwrap());
     }
 }
 
