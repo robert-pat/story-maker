@@ -1,8 +1,12 @@
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
+use serde::{Serialize, Deserialize};
 
-#[derive(Hash, PartialEq, Eq, Debug, Copy, Clone)]
+pub trait FromJSON{
+    fn from_json() -> Self where Self: Sized;
+}
+#[derive(Hash, PartialEq, Eq, Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct NodeID {
     id: u64,
 }
@@ -22,7 +26,7 @@ impl Default for NodeID{
     }
 }
 
-#[derive(Hash, PartialEq, Eq, Default)]
+#[derive(Hash, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct StoryEvent { //TODO: better name for these, eg: pickup an item, press a button, etc.
     id: u64,
 }
@@ -43,9 +47,9 @@ pub struct StoryChoice{
     pub(crate) message_on_chose: Option<String>, // Display when this option is chosen
     pub(crate) message_on_lock: Option<String>,  // Display when trying this option & this is locked
     pub(crate) message_on_skip: Option<String>, // Display when skipping this choice
-    requirements: Vec<StoryEvent>,
-    when_chosen: Vec<(StoryEvent, bool)>, // events to update when this option is chosen
-    when_skipped: Vec<(StoryEvent, bool)>, // events to update when this option is skipped
+    pub(crate) requirements: Vec<StoryEvent>,
+    pub(crate) when_chosen: Vec<(StoryEvent, bool)>, // events to update when this option is chosen
+    pub(crate) when_skipped: Vec<(StoryEvent, bool)>, // events to update when this option is skipped
 }
 impl StoryChoice{
     pub fn new()-> Self{
@@ -89,14 +93,10 @@ impl StoryNode{
             prev_node: None,
         }
     }
-
-    pub fn from_file() -> Self{
-        todo!()
-    }
 }
 
 pub struct StoryContainer{
-    nodes: HashMap<NodeID, StoryNode>,
+    pub(crate) nodes: HashMap<NodeID, StoryNode>,
 }
 impl StoryContainer{
     pub fn new() -> Self{
@@ -106,11 +106,6 @@ impl StoryContainer{
             nodes: map
         }
     }
-
-    pub fn from_file() -> Self{
-        todo!()
-    }
-
     pub fn get_node(&self, id: NodeID) -> &StoryNode{
         match self.nodes.get(&id){
             Some(n) => n,
@@ -131,9 +126,6 @@ impl StoryTraverser {
             prev_node: None,
             events: HashMap::new()
         }
-    }
-    pub fn from_file() -> Self{
-        todo!() // read the story from JSON
     }
     pub fn is_choice_unlocked(&self, choice: &StoryChoice) -> bool{
         for r in &choice.requirements{

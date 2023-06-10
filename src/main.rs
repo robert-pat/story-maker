@@ -1,13 +1,7 @@
 mod story;
 mod display;
 
-
-fn main() {
-    match ctrlc::set_handler(|| {println!("Exiting game!"); std::process::exit(0);}) {
-        Ok(_) => {},
-        Err(_) => eprint!("Couldn't set exit handler!")
-    };
-
+fn run_game(){
     let mut story_pos = story::StoryTraverser::new();
     let nodes = story::StoryContainer::new();
     display::startup();
@@ -46,4 +40,13 @@ fn main() {
         // update the new current node
         story_pos.current_node = choice.destination_node;
     }
+}
+
+fn main() {
+    match ctrlc::set_handler(|| {println!("Exiting game!"); std::process::exit(0);}) {
+        Ok(_) => {},
+        Err(_) => eprint!("Couldn't set exit handler!")
+    };
+
+    run_game();
 }
